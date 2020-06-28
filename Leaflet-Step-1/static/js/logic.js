@@ -40,7 +40,7 @@ function createFeatures(earthquakeData) {
             // Make circle radius dependent on the magnitude and get color based on the same feature
             return new L.CircleMarker(latlng, {
                 radius: feature.properties.mag * 5,
-                fillOpacity: 0.70,
+                fillOpacity: 1,
                 color: getColor(feature.properties.mag)
             })
         },
@@ -64,8 +64,8 @@ function createMap(earthquakes) {
     });
     // Declare map object and set it to the map element in the DOM
     var myMap = L.map("map", {
-        center: [39.876019, -117.224121],
-        zoom: 5,
+        center: [29.876019, -107.224121],
+        zoom: 4.5,
         layers: [mapLayer, earthquakes]
     });
     // Create a legend for the map based on the earthquakes data and colors
@@ -84,7 +84,11 @@ function createMap(earthquakes) {
         var legendInfo = "<h1>Earthquake intensity<h1>" + 
             "<div class=\"labels\">" +
                 "<div class=\"max\">5+</div>" +
-                "<div class=\"min\">0</div>" +
+                "<div class=\"fourth\">4-5</div>" +
+                "<div class=\"third\">3-4</div>" +
+                "<div class=\"second\">2-3</div>" +
+                "<div class=\"first\">1-2</div>" +
+                "<div class=\"min\">0-1</div>" +
             "</div>";
 
         div.innerHTML = legendInfo;
@@ -101,7 +105,8 @@ function createMap(earthquakes) {
 
 };
 
+// Get earthquakes data
 d3.json(url, function(data) {
-    console.log(data)
+    // Create features with the earthquakes data
     createFeatures(data.features)
 });

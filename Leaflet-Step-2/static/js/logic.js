@@ -1,5 +1,6 @@
-// Get data url
-url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+// Get data url for both the earthquakes and the plates
+earthquakesUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+platesUrl = "static/data/PB2002_boundaries.json"
 
 // Get marker color based on earthquake magnitude
 function getColor(mag) {
@@ -26,8 +27,8 @@ function getColor(mag) {
     }
 };
 
-// Declare function to create map features.
-function createFeatures(earthquakeData) {
+// Declare function to create map features based on two inputs
+function createFeatures(earthquakeData, platesData) {
     // Create popup layers using earthquake title, type and magnitude
     function onEachFeature(feature, layer) {
         layer.bindPopup("<p>" + feature.properties.title + "</p>" +
@@ -40,20 +41,29 @@ function createFeatures(earthquakeData) {
             // Make circle radius dependent on the magnitude and get color based on the same feature
             return new L.CircleMarker(latlng, {
                 radius: feature.properties.mag * 5,
-                fillOpacity: 0.70,
+                fillOpacity: 1,
                 color: getColor(feature.properties.mag)
             })
         },
         // Append popups on each feature
         onEachFeature: onEachFeature
     });
-    // Call create map function using the earthquakes data
-    createMap(earthquakes);
+    // Shade plates boundaries
+    var plates = L.geoJSON(platesData, {
+        style: function() {
+            return {
+                color: "orange",
+                weight: 1.5
+            }
+        }
+    });
+    // Call create map function using the earthquakes and plates data
+    createMap(earthquakes, plates);
 };
 
 // Declare function to create map
-function createMap(earthquakes) {
-    // Get initial light layer
+function createMap(earthquakes, plates) {
+    // Declare map layers
     var light = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
       attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
       tileSize: 512,
@@ -80,21 +90,23 @@ function createMap(earthquakes) {
         id: "mapbox/satellite-streets-v11",
         accessToken: API_KEY
     });
-
+    // Declare base maps array to be chosen from
     var baseMaps = {
         Light: light,
         Outdoors: outdoors,
         Satellite: satellite
     };
-
+    // Declare data layers to be chosen from
     var overlayMaps = {
-        Earthquakes: earthquakes
+        "Earthquakes": earthquakes,
+        "Fault Lines": plates
     }
     // Declare map object and set it to the map element in the DOM
     var myMap = L.map("map", {
-        center: [39.876019, -117.224121],
-        zoom: 5,
-        layers: [light, earthquakes]
+        center: [29.876019, -107.224121],
+        zoom: 4.5,
+        // Set default layers
+        layers: [satellite, earthquakes, plates]
     });
     // Create a legend for the map based on the earthquakes data and colors
     var legend = L.control({position: "bottomright"});
@@ -112,7 +124,11 @@ function createMap(earthquakes) {
         var legendInfo = "<h1>Earthquake intensity<h1>" + 
             "<div class=\"labels\">" +
                 "<div class=\"max\">5+</div>" +
-                "<div class=\"min\">0</div>" +
+                "<div class=\"fourth\">4-5</div>" +
+                "<div class=\"third\">3-4</div>" +
+                "<div class=\"second\">2-3</div>" +
+                "<div class=\"first\">1-2</div>" +
+                "<div class=\"min\">0-1</div>"
             "</div>";
 
         div.innerHTML = legendInfo;
@@ -129,7 +145,11 @@ function createMap(earthquakes) {
     L.control.layers(baseMaps, overlayMaps).addTo(myMap);
 };
 
-d3.json(url, function(data) {
-    console.log(data)
-    createFeatures(data.features)
+// Get earthquakes data
+d3.json(earthquakesUrl, function(earthquakeData) {
+    // Get plates data
+    d3.json(platesUrl, function(platesData) {
+        // Create features with the earthquakes and the plates data
+        createFeatures(earthquakeData.features, platesData.features)
+    });
 });

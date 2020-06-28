@@ -39,8 +39,34 @@ html {
   font-size: 15px;
 }
 
+.legend .first {
+  position: absolute;
+  right: 75%;
+  font-size: 15px;
+}
+
+.legend .second {
+  position: absolute;
+  right: 58%;
+  font-size: 15px;
+}
+
+.legend .third {
+  position: absolute;
+  right: 43.5%;
+  font-size: 15px;
+}
+
+.legend .fourth {
+  position: absolute;
+  right: 27.5%;
+  font-size: 15px;
+}
+
 .legend .max {
-  float: right;
+  /* float: right; */
+  position: absolute;
+  right: 12.5%;
   font-size: 15px;
 }
 
